@@ -1,5 +1,6 @@
 package com.vinic.minhasfinancas.service.impl;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.vinic.minhasfinancas.exception.ErroAutenticacao;
 import com.vinic.minhasfinancas.exception.RegraNegocioException;
+import com.vinic.minhasfinancas.model.entity.Lancamento;
 import com.vinic.minhasfinancas.model.entity.Usuario;
 import com.vinic.minhasfinancas.model.repository.UsuarioRepository;
 import com.vinic.minhasfinancas.service.UsuarioService;
@@ -49,6 +51,19 @@ public class UsuarioServiceImpl implements UsuarioService {
 		if (existe) {
 			throw new RegraNegocioException("Já existe um usuário cadastrado com este email.");
 		}
+	}
+
+	@Override
+	public Optional<Usuario> obterPorId(Long id) {
+		return repository.findById(id);
+	}
+
+	@Override
+	@Transactional
+	public void meuDeletar(Usuario usuario) {
+		Objects.requireNonNull(usuario.getId());
+		repository.delete(usuario);
+
 	}
 
 }

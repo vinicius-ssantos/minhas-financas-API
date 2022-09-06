@@ -1,8 +1,11 @@
 package com.vinic.minhasfinancas.api.resource;
 
+import com.vinic.minhasfinancas.service.LancamentoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,36 +17,59 @@ import com.vinic.minhasfinancas.exception.RegraNegocioException;
 import com.vinic.minhasfinancas.model.entity.Usuario;
 import com.vinic.minhasfinancas.service.UsuarioService;
 
+import lombok.RequiredArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/usuarios")
+@RequiredArgsConstructor
 public class UsuarioResource {
 
-	private UsuarioService service;
+    private final UsuarioService service;
+    private final LancamentoService lancamentoService;
 
-	public UsuarioResource(UsuarioService service) {
-		this.service = service;
-	}
 
-	@PostMapping("/autenticar")
-	public ResponseEntity autenticar(@RequestBody UsuarioDTO dto) {
-		try {
-			Usuario usuarioAutenticar = service.autenticar(dto.getEmail(), dto.getSenha());
-			return ResponseEntity.ok(usuarioAutenticar);
-		} catch (ErroAutenticacao e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-	}
+    @PostMapping("/autenticar")
+    public ResponseEntity<?> autenticar(@RequestBody UsuarioDTO dto) {
+        try {
+            Usuario usuarioAutenticar = service.autenticar(dto.getEmail(), dto.getSenha());
+            return ResponseEntity.ok(usuarioAutenticar);
+        } catch (ErroAutenticacao e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
-	@PostMapping
-	public ResponseEntity salvar(@RequestBody UsuarioDTO dto) {
-		Usuario usuario = Usuario.builder().nome(dto.getNome()).email(dto.getEmail()).senha(dto.getSenha()).build();
+    @PostMapping
+    public ResponseEntity<?> salvar(@RequestBody UsuarioDTO dto) {
+        Usuario usuario = Usuario.builder().nome(dto.getNome()).email(dto.getEmail()).senha(dto.getSenha()).build();
 
-		try {
-			Usuario usuarioSalvoUsuario = service.salvarUsuario(usuario);
-			return new ResponseEntity(usuarioSalvoUsuario, HttpStatus.CREATED);
+        try {
+            Usuario usuarioSalvoUsuario = service.salvarUsuario(usuario);
+            return new ResponseEntity<>(usuarioSalvoUsuario, HttpStatus.CREATED);
 
-		} catch (RegraNegocioException e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
-		}
-	}
+        } catch (RegraNegocioException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("{id}/saldo")
+    public ResponseEntity<?> obterSaldo(@PathVariable("id") Long id) {
+        Optional<Usuario> usuario = service.obterPorId(id);
+        if (!usuario.isPresent()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        BigDecimal saldo = lancamentoService.obterSaldoPorUsuario(id);
+        return ResponseEntity.ok(saldo);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> meuDeletar(@PathVariable("id") Long id) {
+        return service.obterPorId(id).map(entidade -> {
+            service.meuDeletar(entidade);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }).orElseGet(() -> new ResponseEntity<>("Usuario não encontrado na base de Dados.", HttpStatus.BAD_REQUEST));
+
+    }
 }
