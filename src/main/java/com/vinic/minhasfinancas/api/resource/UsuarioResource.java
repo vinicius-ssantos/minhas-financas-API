@@ -1,6 +1,9 @@
 package com.vinic.minhasfinancas.api.resource;
 
 import com.vinic.minhasfinancas.service.LancamentoService;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -57,19 +60,12 @@ public class UsuarioResource {
     @GetMapping("{id}/saldo")
     public ResponseEntity<?> obterSaldo(@PathVariable("id") Long id) {
         Optional<Usuario> usuario = service.obterPorId(id);
-        if (!usuario.isPresent()){
+        if (!usuario.isPresent()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         BigDecimal saldo = lancamentoService.obterSaldoPorUsuario(id);
         return ResponseEntity.ok(saldo);
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<?> meuDeletar(@PathVariable("id") Long id) {
-        return service.obterPorId(id).map(entidade -> {
-            service.meuDeletar(entidade);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }).orElseGet(() -> new ResponseEntity<>("Usuario não encontrado na base de Dados.", HttpStatus.BAD_REQUEST));
 
-    }
 }

@@ -9,7 +9,9 @@ import com.vinic.minhasfinancas.model.enums.StatusLancamento;
 import com.vinic.minhasfinancas.model.enums.TipoLancamento;
 import com.vinic.minhasfinancas.service.LancamentoService;
 import com.vinic.minhasfinancas.service.UsuarioService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,13 +27,9 @@ public class LancamentoResource {
     private final LancamentoService service;
     private final UsuarioService usuarioService;
 
+
     @GetMapping
-    public ResponseEntity<?> buscar(
-            @RequestParam(value = "descricao", required = false) String descricao,
-            @RequestParam(value = "mes", required = false) Integer mes,
-            @RequestParam(value = "ano", required = false) Integer ano,
-            @RequestParam("usuario") Long idUsuario
-    ) {
+    public ResponseEntity<?> buscar(@RequestParam(value = "descricao", required = false) String descricao, @RequestParam(value = "mes", required = false) Integer mes, @RequestParam(value = "ano", required = false) Integer ano, @RequestParam("usuario") Long idUsuario) {
 
         Lancamento lancamentoFiltro = new Lancamento();
         lancamentoFiltro.setDescricao(descricao);
@@ -50,14 +48,12 @@ public class LancamentoResource {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<?>  obterLancamento(@PathVariable("id") Long id) {
-        return service.obterPorId(id)
-                .map(lancamento -> new ResponseEntity<>(converter(lancamento), HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public ResponseEntity<?> obterLancamento(@PathVariable("id") Long id) {
+        return service.obterPorId(id).map(lancamento -> new ResponseEntity<>(converter(lancamento), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping
-    public ResponseEntity<?>  salvar(@RequestBody LancamentoDTO dto) {
+    public ResponseEntity<?> salvar(@RequestBody LancamentoDTO dto) {
         try {
             Lancamento entidade = converter(dto);
             entidade = service.salvar(entidade);
@@ -68,7 +64,7 @@ public class LancamentoResource {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<?>  atualizar(@PathVariable("id") Long id, @RequestBody LancamentoDTO dto) {
+    public ResponseEntity<?> atualizar(@PathVariable("id") Long id, @RequestBody LancamentoDTO dto) {
         return service.obterPorId(id).map(entity -> {
             try {
                 Lancamento lancamento = converter(dto);
@@ -78,13 +74,12 @@ public class LancamentoResource {
             } catch (RegraNegocioException e) {
                 return ResponseEntity.badRequest().body(e.getMessage());
             }
-        }).orElseGet(() ->
-                new ResponseEntity<>("Lancamento não encontrado na base de Dados.", HttpStatus.BAD_REQUEST));
+        }).orElseGet(() -> new ResponseEntity<>("Lancamento não encontrado na base de Dados.", HttpStatus.BAD_REQUEST));
     }
 
 
     @PutMapping("{id}/atualiza-status")
-    public ResponseEntity<?>  atualizarStatus(@PathVariable("id") Long id, @RequestBody AtualizaStatusDTO dto) {
+    public ResponseEntity<?> atualizarStatus(@PathVariable("id") Long id, @RequestBody AtualizaStatusDTO dto) {
         return service.obterPorId(id).map(entity -> {
             StatusLancamento statusLancamento = StatusLancamento.valueOf(dto.getStatus());
             if (statusLancamento == null) {
@@ -97,18 +92,16 @@ public class LancamentoResource {
             } catch (RegraNegocioException e) {
                 return ResponseEntity.badRequest().body(e.getMessage());
             }
-        }).orElseGet(() ->
-                new ResponseEntity<>("Lancamento não encontrado na base de Dados.", HttpStatus.BAD_REQUEST));
+        }).orElseGet(() -> new ResponseEntity<>("Lancamento não encontrado na base de Dados.", HttpStatus.BAD_REQUEST));
     }
 
 
     @DeleteMapping("{id}")
-    public ResponseEntity<?>  deletar(@PathVariable("id") Long id) {
+    public ResponseEntity<?> deletar(@PathVariable("id") Long id) {
         return service.obterPorId(id).map(entidade -> {
             service.deletar(entidade);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }).orElseGet(() ->
-                new ResponseEntity<>("Lancamento não encontrado na base de Dados.", HttpStatus.BAD_REQUEST));
+        }).orElseGet(() -> new ResponseEntity<>("Lancamento não encontrado na base de Dados.", HttpStatus.BAD_REQUEST));
     }
 
     private LancamentoDTO converter(Lancamento lancamento) {
@@ -148,18 +141,6 @@ public class LancamentoResource {
         }
 
         return lancamento;
-    }
-
-    @GetMapping("/listar")
-    public ResponseEntity<?>  listar() {
-        try {
-            Optional<List<Lancamento>> lancamentos = Optional.ofNullable(service.listar());
-            return ResponseEntity.of(lancamentos);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Lancamento não encontrado na base de Dados.", HttpStatus.BAD_REQUEST);
-
-        }
-
     }
 
 

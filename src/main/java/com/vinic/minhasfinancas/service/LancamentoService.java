@@ -2,6 +2,7 @@ package com.vinic.minhasfinancas.service;
 
 import com.vinic.minhasfinancas.model.entity.Lancamento;
 import com.vinic.minhasfinancas.model.enums.StatusLancamento;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,7 +27,7 @@ public interface LancamentoService  {
 
 	BigDecimal obterSaldoPorUsuario(Long id);
 
-	 List<Lancamento> listar();
+
 
 	
 }

@@ -34,7 +34,6 @@ public class UsuarioServiceTest {
 	@MockBean
 	UsuarioRepository repository;
 
-
 	@Test(expected = Test.None.class)
 	public void deveSalvarUmUsuario() {
 		// cenario
