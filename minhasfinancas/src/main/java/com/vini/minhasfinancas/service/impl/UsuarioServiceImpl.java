@@ -39,7 +39,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    @Transactional
+    @Transactional // serve para garantir que a transação seja fechada ao final do método
     public Usuario salvarUsuario(Usuario usuario) {
         validarEmail(usuario.getEmail());
         criptografaSenha(usuario);
